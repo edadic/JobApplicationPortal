@@ -35,6 +35,19 @@ const jobListingController = {
             console.error('Error creating job listing:', error);
             res.status(500).json({ message: 'Internal server error' });
         }
+    },
+
+    async getActiveListings(req, res) {
+        try {
+            const jobs = await JobListing.getActiveListings();
+            res.json({
+                message: 'Active job listings retrieved successfully',
+                jobs: jobs
+            });
+        } catch (error) {
+            console.error('Error fetching job listings:', error);
+            res.status(500).json({ message: 'Internal server error' });
+        }
     }
 };
 
