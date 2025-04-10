@@ -12,6 +12,7 @@ app.use(express.urlencoded({ extended: true }));
 // Routes
 app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/jobs', require('./routes/jobListingRoutes'));
+app.use('/api/applications', require('./routes/jobApplicationRoutes'));
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
