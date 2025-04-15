@@ -4,5 +4,6 @@ const jobApplicationController = require('../controllers/jobApplicationControlle
 const authMiddleware = require('../middleware/authMiddleware');
 
 router.post('/apply', authMiddleware, jobApplicationController.apply);
+router.get('/employer-applications', authMiddleware, jobApplicationController.getEmployerApplications);
 
 module.exports = router;
