@@ -6,6 +6,9 @@ import NavBar from './components/NavBar'
 import Profile from './pages/Profile'
 import MyListings from './pages/MyListings'
 import MyApplications from './pages/MyApplications'
+import Login from './pages/Login'
+import ForgotPassword from './pages/ForgotPassword'
+import Register from './pages/Register'
 
 const App = () => {
   const [userType, setUserType] = useState(null)
@@ -32,6 +35,9 @@ const App = () => {
       <NavBar userType={userType} />
       <Routes>
         <Route path="/" element={<Dashboard />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/profile" element={<Profile />} />
         {userType === 'employer' ? (
           <Route path="/my-listings" element={<MyListings />} />
