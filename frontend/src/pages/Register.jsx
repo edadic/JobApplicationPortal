@@ -8,6 +8,8 @@ const Register = () => {
     email: '',
     username: '',
     password: '',
+    first_name: '',
+    last_name: '',
     isEmployer: false
   });
 
@@ -22,14 +24,36 @@ const Register = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post('http://localhost:8000/api/register', formData);
-      if (response.data) {
-        navigate('/login');
-      }
+      const response = await axios.post('http://localhost:3000/api/auth/register', {
+        email: formData.email,
+        password: formData.password,
+        first_name: formData.first_name,
+        last_name: formData.last_name,
+        user_type: formData.isEmployer ? 'employer' : 'job_seeker',
+        profile: formData.isEmployer ? {
+          company_name: formData.username,
+          company_size: '',
+          industry: '',
+          company_description: '',
+          website_url: '',
+          location: ''
+        } : {
+          resume_url: '',
+          skills: '',
+          experience_years: 0,
+          education_level: '',
+          preferred_job_type: '',
+          preferred_location: ''
+        }
+      });
+      
+      alert('User registered successfully!');
+      navigate('/login');
     } catch (error) {
       console.error('Registration failed:', error);
+      alert(error.response?.data?.message || 'Registration failed');
     }
-  };
+};
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
