@@ -1,27 +1,32 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 
 const JobFormModal = ({ isOpen, onClose, onSubmit }) => {
-  const [jobData, setJobData] = useState({
+  const initialState = {
     title: '',
-    company_name: '',
     description: '',
+    requirements: '',
+    salary_range: '',
     location: '',
-    salary_range: ''
-  })
+    job_type: 'full_time',
+    experience_level: '',
+    closing_date: new Date().toISOString().split('T')[0]
+  };
+
+  const [jobData, setJobData] = useState(initialState);
 
   const handleSubmit = (e) => {
-    e.preventDefault()
-    onSubmit(jobData)
-    setJobData({
-      title: '',
-      company_name: '',
-      description: '',
-      location: '',
-      salary_range: ''
-    })
-  }
+    e.preventDefault();
+    onSubmit(jobData);
+    setJobData(initialState);
+  };
 
-  if (!isOpen) return null
+  useEffect(() => {
+    if (!isOpen) {
+      setJobData(initialState);
+    }
+  }, [isOpen]);
+
+  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
@@ -34,16 +39,6 @@ const JobFormModal = ({ isOpen, onClose, onSubmit }) => {
               type="text"
               value={jobData.title}
               onChange={(e) => setJobData({ ...jobData, title: e.target.value })}
-              className="w-full p-2 border rounded"
-              required
-            />
-          </div>
-          <div className="mb-4">
-            <label className="block text-gray-700 mb-2">Company Name</label>
-            <input
-              type="text"
-              value={jobData.company_name}
-              onChange={(e) => setJobData({ ...jobData, company_name: e.target.value })}
               className="w-full p-2 border rounded"
               required
             />
@@ -67,6 +62,20 @@ const JobFormModal = ({ isOpen, onClose, onSubmit }) => {
               className="w-full p-2 border rounded"
               required
             />
+          </div>
+          <div className="mb-4">
+            <label className="block text-gray-700 mb-2">Job Type</label>
+            <select
+              value={jobData.job_type}
+              onChange={(e) => setJobData({ ...jobData, job_type: e.target.value })}
+              className="w-full p-2 border rounded"
+              required
+            >
+              <option value="full_time">Full Time</option>
+              <option value="part_time">Part Time</option>
+              <option value="contract">Contract</option>
+              <option value="internship">Internship</option>
+            </select>
           </div>
           <div className="mb-4">
             <label className="block text-gray-700 mb-2">Salary Range</label>
@@ -96,7 +105,7 @@ const JobFormModal = ({ isOpen, onClose, onSubmit }) => {
         </form>
       </div>
     </div>
-  )
-}
+  );
+};
 
 export default JobFormModal

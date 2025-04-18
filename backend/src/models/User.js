@@ -16,6 +16,11 @@ class User {
         return users[0];
     }
 
+    static async findById(id) {
+        const [users] = await db.execute('SELECT * FROM users WHERE id = ?', [id]);
+        return users[0] || null;
+    }
+
     static async createProfile(userId, profileData, userType) {
         const table = userType === 'job_seeker' ? 'job_seeker_profiles' : 'employer_profiles';
         const fields = userType === 'job_seeker' 
