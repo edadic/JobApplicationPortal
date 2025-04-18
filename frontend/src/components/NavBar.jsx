@@ -1,33 +1,14 @@
 import React, { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import axios from 'axios'
 
-const NavBar = () => {
-  const [userType, setUserType] = useState(null)
-  const [loading, setLoading] = useState(true)
+const NavBar = ({ userType }) => {
+  const navigate = useNavigate()
 
-  useEffect(() => {
-    const checkUserType = async () => {
-      try {
-        const token = localStorage.getItem('token')
-        if (token) {
-          const response = await axios.get('http://localhost:3000/api/auth/me', {
-            headers: { Authorization: `Bearer ${token}` }
-          })
-          setUserType(response.data.userType)
-        }
-      } catch (error) {
-        console.error('Error checking user type:', error)
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    checkUserType()
-  }, [])
-
-  if (loading) {
-    return <div>Loading...</div>
+  const handleLogout = () => {
+    localStorage.removeItem('token')
+    navigate('/login')
+    window.location.reload() // Force refresh to clear states
   }
 
   return (
@@ -42,6 +23,7 @@ const NavBar = () => {
           ) : (
             <Link to="/my-applications" className="hover:text-gray-300">My Applications</Link>
           )}
+          <button onClick={handleLogout} className="hover:text-gray-300">Logout</button>
         </div>
       </div>
     </nav>

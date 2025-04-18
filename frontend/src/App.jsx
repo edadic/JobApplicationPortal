@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Routes, Route } from 'react-router-dom'
+import { Routes, Route, useLocation, useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import Dashboard from './pages/Dashboard'
 import NavBar from './components/NavBar'
@@ -12,6 +12,10 @@ import Register from './pages/Register'
 
 const App = () => {
   const [userType, setUserType] = useState(null)
+  const location = useLocation()
+  const navigate = useNavigate()
+
+  const hideNavbar = ['/login', '/register', '/forgot-password'].includes(location.pathname)
 
   useEffect(() => {
     const checkUser = async () => {
@@ -22,20 +26,26 @@ const App = () => {
             headers: { Authorization: `Bearer ${token}` }
           })
           setUserType(response.data.userType)
+        } else if (!hideNavbar) {
+          navigate('/login')
         }
       } catch (error) {
         console.error('Error fetching user:', error)
+        localStorage.removeItem('token')
+        if (!hideNavbar) {
+          navigate('/login')
+        }
       }
     }
     checkUser()
-  }, [])
+  }, [location.pathname])
 
   return (
     <div className="min-h-screen bg-gray-100">
-      <NavBar userType={userType} />
+      {!hideNavbar && <NavBar userType={userType} />}
       <Routes>
         <Route path="/" element={<Dashboard />} />
-        <Route path="/login" element={<Login />} />
+        <Route path="/login" element={<Login setUserType={setUserType} />} />
         <Route path="/register" element={<Register />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/profile" element={<Profile />} />
@@ -48,5 +58,5 @@ const App = () => {
     </div>
   )
 }
-//test comment
+
 export default App

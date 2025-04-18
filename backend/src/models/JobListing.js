@@ -49,6 +49,20 @@ class JobListing {
         `);
         return jobs;
     }
+
+    static async getByEmployerId(employerId) {
+        const [jobs] = await db.execute(`
+            SELECT 
+                jl.*,
+                ep.company_name,
+                ep.location as company_location
+            FROM job_listings jl
+            JOIN employer_profiles ep ON jl.employer_id = ep.id
+            WHERE jl.employer_id = ?
+            ORDER BY jl.created_at DESC
+        `, [employerId]);
+        return jobs;
+    }
 }
 
 module.exports = JobListing;

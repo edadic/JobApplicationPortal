@@ -27,21 +27,35 @@ const MyListings = () => {
 
   const handleSubmitJob = async (jobData) => {
     try {
-      const token = localStorage.getItem('token')
-      await axios.post('http://localhost:3000/api/jobs', jobData, {
-        headers: { Authorization: `Bearer ${token}` }
-      })
-      setIsModalOpen(false)
-      fetchMyJobs() // Refresh the job list
+      const token = localStorage.getItem('token');
+      const profileResponse = await axios.get('http://localhost:3000/api/auth/me', {
+          headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      if (!profileResponse.data.employerProfile) {
+          alert('Please complete your employer profile first');
+          return;
+      }
+      
+      const jobPayload = {
+          ...jobData,
+          employer_id: profileResponse.data.employerProfile.id,
+          status: 'active',
+          closing_date: jobData.closing_date || new Date().toISOString().split('T')[0]
+      };
+  
+      await axios.post('http://localhost:3000/api/jobs', jobPayload, {
+          headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      alert('Job listing created successfully!');
+      setIsModalOpen(false);
+      await fetchMyJobs();
     } catch (error) {
-      console.error('Error posting job:', error)
-      alert('Failed to post job')
+      console.error('Error posting job:', error);
+      alert(error.response?.data?.message || 'Failed to post job');
     }
-  }
-
-  if (loading) {
-    return <div>Loading...</div>
-  }
+  };
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -63,7 +77,8 @@ const MyListings = () => {
             <div className="mb-4">
               <p className="text-gray-700">{job.description}</p>
               <p className="text-gray-600 mt-2">Location: {job.location}</p>
-              <p className="text-gray-600">Salary: {job.salary_range}</p>
+              <p className="text-gray-600">Type: {job.job_type}</p>
+              <p className="text-gray-600">Status: {job.status}</p>
             </div>
           </div>
         ))}
