@@ -32,6 +32,7 @@ class JobListing {
     static async getActiveListings() {
         const [jobs] = await db.execute(`
             SELECT 
+                jl.id AS id,
                 jl.title,
                 jl.description,
                 jl.requirements,
