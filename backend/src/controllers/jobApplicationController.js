@@ -107,6 +107,56 @@ const jobApplicationController = {
                 error: error.message
             });
         }
+    },
+
+    async getJobSeekerApplications(req, res) {
+        try {
+            if (req.user.userType !== 'job_seeker') {
+                return res.status(403).json({ message: 'Only job seekers can view their applications' });
+            }
+
+            const [seekerProfile] = await db.execute(
+                'SELECT id FROM job_seeker_profiles WHERE user_id = ?',
+                [req.user.userId]
+            );
+
+            if (!seekerProfile[0]) {
+                return res.status(404).json({ message: 'Job seeker profile not found' });
+            }
+
+            const [applications] = await db.execute(`
+                SELECT 
+                    ja.id as application_id,
+                    ja.cover_letter,
+                    ja.status as application_status,
+                    ja.applied_at,
+                    jl.title as job_title,
+                    ep.company_name, -- Get company_name from employer_profiles
+                    jl.location,
+                    jl.salary_range AS salary, -- Use salary_range from job_listings
+                    jl.description
+                FROM job_applications ja
+                JOIN job_listings jl ON ja.job_id = jl.id
+                JOIN employer_profiles ep ON jl.employer_id = ep.id -- Join with employer_profiles
+                WHERE ja.applicant_id = ?
+                ORDER BY ja.applied_at DESC
+            `, [seekerProfile[0].id]);
+
+            res.json({
+                message: 'Job seeker applications retrieved successfully',
+                applications
+            });
+        } catch (error) {
+            console.error('Error details:', {
+                message: error.message,
+                stack: error.stack,
+                sqlMessage: error.sqlMessage
+            });
+            res.status(500).json({
+                message: 'Internal server error',
+                error: error.message
+            });
+        }
     }
 };
 
