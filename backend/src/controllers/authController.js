@@ -72,8 +72,9 @@ const authController = {
             if (!user) {
                 return res.status(404).json({ message: 'User not found' });
             }
-
+            
             let employerProfile = null;
+            let jobSeekerProfile = null;
             if (user.user_type === 'employer') {
                 const [profiles] = await db.execute(
                     'SELECT * FROM employer_profiles WHERE user_id = ?',
@@ -82,10 +83,16 @@ const authController = {
                 
                 if (profiles && profiles.length > 0) {
                     employerProfile = profiles[0];
-                } else {
-                    return res.status(404).json({ message: 'Employer profile not found' });
                 }
-            }
+            } else if(user.user_type === 'job_seeker') {
+                    const[profiles] = await db.execute(
+                        'SELECT * FROM job_seeker_profiles WHERE user_id = ?',
+                        [user.id]
+                    );
+                    if (profiles && profiles.length > 0) {
+                        jobSeekerProfile = profiles[0];
+                    }
+                }
 
             res.json({
                 id: user.id,
@@ -93,7 +100,8 @@ const authController = {
                 userType: user.user_type,
                 firstName: user.first_name,
                 lastName: user.last_name,
-                employerProfile
+                employerProfile,
+                jobSeekerProfile
             });
         } catch (error) {
             console.error('Error in getMe:', error);

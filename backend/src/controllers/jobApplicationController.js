@@ -210,6 +210,42 @@ const jobApplicationController = {
             res.status(500).json({ message: 'Internal server error' });
         }
     },
+
+    async updateApplicationStatus(req, res) {
+        try {
+            if (req.user.userType !== 'employer') {
+                return res.status(403).json({ message: 'Only employers can update application status' });
+            }
+
+            const { applicationId } = req.params;
+            const { status } = req.body;
+            const allowedStatuses = ['pending', 'reviewed', 'shortlisted', 'rejected', 'accepted'];
+            if (!allowedStatuses.includes(status)) {
+                return res.status(400).json({ message: 'Invalid status value' });
+            }
+
+            // Check if the application belongs to a job owned by this employer
+            const [result] = await db.execute(
+                `SELECT ja.id FROM job_applications ja
+                 JOIN job_listings jl ON ja.job_id = jl.id
+                 JOIN employer_profiles ep ON jl.employer_id = ep.id
+                 WHERE ja.id = ? AND ep.user_id = ?`,
+                [applicationId, req.user.userId]
+            );
+            if (!result[0]) {
+                return res.status(403).json({ message: 'Not authorized to update this application' });
+            }
+            await db.execute(
+                'UPDATE job_applications SET status = ?, updated_at = NOW() WHERE id = ?',
+                [status, applicationId]
+            );
+
+            res.json({ message: 'Application status updated successfully' });
+        } catch (error) {
+            console.error('Error updating application status:', error);
+            res.status(500).json({ message: 'Internal server error' });
+        }
+    }
 };
 
 module.exports = jobApplicationController;
