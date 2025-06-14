@@ -9,4 +9,5 @@ router.get('/my-applications', authMiddleware, jobApplicationController.getJobSe
 router.get('/job/:jobId', authMiddleware, jobApplicationController.getApplicationsForJob);
 router.patch('/:applicationId/status', authMiddleware, jobApplicationController.updateApplicationStatus);
 
+
 module.exports = router;

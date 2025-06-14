@@ -3,7 +3,6 @@ import axios from 'axios'
 import JobFormModal from '../components/JobFormModal'
 import Modal from '../components/Modal'
 
-
 const MyListings = () => {
   const [jobs, setJobs] = useState([])
   const [isModalOpen, setIsModalOpen] = useState(false)
