@@ -32,6 +32,7 @@ class JobListing {
     static async getActiveListings() {
         const [jobs] = await db.execute(`
             SELECT 
+                jl.id AS id,
                 jl.title,
                 jl.description,
                 jl.requirements,
@@ -47,6 +48,20 @@ class JobListing {
             AND (jl.closing_date IS NULL OR jl.closing_date >= CURDATE())
             ORDER BY jl.created_at DESC
         `);
+        return jobs;
+    }
+
+    static async getByEmployerId(employerId) {
+        const [jobs] = await db.execute(`
+            SELECT 
+                jl.*,
+                ep.company_name,
+                ep.location as company_location
+            FROM job_listings jl
+            JOIN employer_profiles ep ON jl.employer_id = ep.id
+            WHERE jl.employer_id = ?
+            ORDER BY jl.created_at DESC
+        `, [employerId]);
         return jobs;
     }
 }

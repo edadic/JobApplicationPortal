@@ -4,12 +4,13 @@ class JobApplication {
     static async create(applicationData) {
         const [result] = await db.execute(
             `INSERT INTO job_applications (
-                job_id, applicant_id, cover_letter
-            ) VALUES (?, ?, ?)`,
+                job_id, applicant_id, cover_letter, status, applied_at, updated_at
+            ) VALUES (?, ?, ?, ?, NOW(), NOW())`,
             [
                 applicationData.job_id,
                 applicationData.applicant_id,
-                applicationData.cover_letter
+                applicationData.cover_letter,
+                'pending'
             ]
         );
         return result.insertId;
