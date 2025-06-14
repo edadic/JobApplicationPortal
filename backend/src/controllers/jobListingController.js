@@ -1,4 +1,5 @@
 const JobListing = require('../models/JobListing');
+const db = require('../config/database');
 
 const jobListingController = {
     async create(req, res) {
@@ -47,6 +48,28 @@ const jobListingController = {
         } catch (error) {
             console.error('Error fetching job listings:', error);
             res.status(500).json({ message: 'Internal server error' });
+        }
+    },
+
+    async getEmployerJobs(req, res) {
+        try {
+            const [employerProfile] = await db.execute(
+                'SELECT id FROM employer_profiles WHERE user_id = ?',
+                [req.user.userId]
+            );
+    
+            if (!employerProfile[0]) {
+                return res.status(404).json({ message: 'Employer profile not found' });
+            }
+    
+            const jobs = await JobListing.getByEmployerId(employerProfile[0].id);
+            res.json({
+                message: 'Employer jobs retrieved successfully',
+                jobs
+            });
+        } catch (error) {
+            console.error('Error getting employer jobs:', error);
+            res.status(500).json({ message: 'Error retrieving jobs' });
         }
     }
 };
