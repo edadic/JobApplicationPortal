@@ -7,6 +7,7 @@ router.post('/apply', authMiddleware, jobApplicationController.apply);
 router.get('/employer-applications', authMiddleware, jobApplicationController.getEmployerApplications);
 router.get('/my-applications', authMiddleware, jobApplicationController.getJobSeekerApplications);
 router.get('/job/:jobId', authMiddleware, jobApplicationController.getApplicationsForJob);
+router.patch('/:applicationId/status', authMiddleware, jobApplicationController.updateApplicationStatus);
 
 
 module.exports = router;

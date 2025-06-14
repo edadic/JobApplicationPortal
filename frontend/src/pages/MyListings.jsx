@@ -127,20 +127,51 @@ const MyListings = () => {
             <p>No applications for this job yet.</p>
           ) : (
             <ul>
-              {applications.map((app) => (
-                <li key={app.application_id} className="mb-4 border-b pb-2">
-                  <div>
-                    <strong>{app.first_name} {app.last_name}</strong> ({app.email})
-                  </div>
-                  <div>Status: {app.application_status}</div>
-                  <div>Applied at: {new Date(app.applied_at).toLocaleString()}</div>
-                  <div>Cover Letter: {app.cover_letter}</div>
-                  <div>Skills: {app.skills}</div>
-                  <div>Experience: {app.experience_years} years</div>
-                  <div>Education: {app.education_level}</div>
-                  <a href={app.resume_url} target="_blank" rel="noopener noreferrer" className="text-blue-500 underline">View Resume</a>
-                </li>
-              ))}
+             {applications.map((app, idx) => (
+    <li key={app.application_id} className="mb-4 border-b pb-2">
+      <div>
+        <strong>{app.first_name} {app.last_name}</strong> ({app.email})
+      </div>
+      <div>
+        Status:{" "}
+        <select
+          value={app.application_status}
+          onChange={async (e) => {
+            const newStatus = e.target.value;
+            try {
+              const token = localStorage.getItem('token');
+              await axios.patch(
+                `http://localhost:3000/api/applications/${app.application_id}/status`,
+                { status: newStatus },
+                { headers: { Authorization: `Bearer ${token}` } }
+              );
+              // Update local state
+              setApplications((prev) =>
+                prev.map((a, i) =>
+                  i === idx ? { ...a, application_status: newStatus } : a
+                )
+              );
+              } catch (err) {
+              alert('Failed to update status');
+            }
+          }}
+          className="border rounded px-2 py-1"
+        >
+          <option value="pending">Pending</option>
+          <option value="reviewed">Reviewed</option>
+          <option value="shortlisted">Shortlisted</option>
+          <option value="rejected">Rejected</option>
+          <option value="accepted">Accepted</option>
+        </select>
+      </div>
+      <div>Applied at: {new Date(app.applied_at).toLocaleString()}</div>
+      <div>Cover Letter: {app.cover_letter}</div>
+      <div>Skills: {app.skills}</div>
+      <div>Experience: {app.experience_years} years</div>
+      <div>Education: {app.education_level}</div>
+      <a href={app.resume_url} target="_blank" rel="noopener noreferrer" className="text-blue-500 underline">View Resume</a>
+    </li>
+  ))}
             </ul>
           )}
         </Modal>
