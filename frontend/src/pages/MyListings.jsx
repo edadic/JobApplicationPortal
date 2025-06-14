@@ -1,11 +1,37 @@
 import React, { useState, useEffect } from 'react'
 import axios from 'axios'
 import JobFormModal from '../components/JobFormModal'
+import Modal from '../components/Modal'
 
 const MyListings = () => {
   const [jobs, setJobs] = useState([])
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [loading, setLoading] = useState(true)
+  const [selectedJob, setSelectedJob] = useState(null)
+  const [applications, setApplications] = useState([])
+  const [isAppModalOpen, setIsAppModalOpen] = useState(false)
+  const [appLoading, setAppLoading] = useState(false)
+
+  const fetchApplications = async (jobId) => {
+    setAppLoading(true)
+    try {
+      const token = localStorage.getItem('token')
+      const response = await axios.get(`http://localhost:3000/api/applications/job/${jobId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      setApplications(response.data.applications || [])
+    } catch (error) {
+      alert('Failed to fetch applications')
+    } finally {
+      setAppLoading(false)
+    }
+  }
+
+   const handleViewApplications = (job) => {
+    setSelectedJob(job)
+    setIsAppModalOpen(true)
+    fetchApplications(job.id)
+  }
 
   const fetchMyJobs = async () => {
     try {
@@ -80,10 +106,46 @@ const MyListings = () => {
               <p className="text-gray-600">Type: {job.job_type}</p>
               <p className="text-gray-600">Status: {job.status}</p>
             </div>
+            <button
+              className="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600"
+              onClick={() => handleViewApplications(job)}
+            >
+              View Applications
+            </button>
           </div>
         ))}
       </div>
 
+        {isAppModalOpen && (
+        <Modal isOpen={isAppModalOpen} onClose={() => setIsAppModalOpen(false)}>
+          <h2 className="text-2xl font-bold mb-4">
+            Applications for: {selectedJob?.title}
+          </h2>
+          {appLoading ? (
+            <p>Loading...</p>
+          ) : applications.length === 0 ? (
+            <p>No applications for this job yet.</p>
+          ) : (
+            <ul>
+              {applications.map((app) => (
+                <li key={app.application_id} className="mb-4 border-b pb-2">
+                  <div>
+                    <strong>{app.first_name} {app.last_name}</strong> ({app.email})
+                  </div>
+                  <div>Status: {app.application_status}</div>
+                  <div>Applied at: {new Date(app.applied_at).toLocaleString()}</div>
+                  <div>Cover Letter: {app.cover_letter}</div>
+                  <div>Skills: {app.skills}</div>
+                  <div>Experience: {app.experience_years} years</div>
+                  <div>Education: {app.education_level}</div>
+                  <a href={app.resume_url} target="_blank" rel="noopener noreferrer" className="text-blue-500 underline">View Resume</a>
+                </li>
+              ))}
+            </ul>
+          )}
+        </Modal>
+      )}
+      
       <JobFormModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}

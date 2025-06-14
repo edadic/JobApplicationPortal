@@ -157,7 +157,59 @@ const jobApplicationController = {
                 error: error.message
             });
         }
-    }
+    },
+
+    async getApplicationsForJob(req, res) {
+        try {
+            if (req.user.userType !== 'employer') {
+                return res.status(403).json({ message: 'Only employers can view applications' });
+            }
+
+            const jobId = req.params.jobId;
+
+            // Check if this job belongs to the employer
+            const [employerProfile] = await db.execute(
+                'SELECT id FROM employer_profiles WHERE user_id = ?',
+                [req.user.userId]
+            );
+            if (!employerProfile[0]) {
+                return res.status(404).json({ message: 'Employer profile not found' });
+            }
+
+            const [job] = await db.execute(
+                'SELECT * FROM job_listings WHERE id = ? AND employer_id = ?',
+                [jobId, employerProfile[0].id]
+            );
+            if (!job[0]) {
+                return res.status(403).json({ message: 'You do not own this job listing' });
+            }
+
+            const [applications] = await db.execute(`
+                SELECT 
+                    ja.id as application_id,
+                    ja.cover_letter,
+                    ja.status as application_status,
+                    ja.applied_at,
+                    u.first_name,
+                    u.last_name,
+                    u.email,
+                    jsp.skills,
+                    jsp.experience_years,
+                    jsp.education_level,
+                    jsp.resume_url
+                FROM job_applications ja
+                JOIN job_seeker_profiles jsp ON ja.applicant_id = jsp.id
+                JOIN users u ON jsp.user_id = u.id
+                WHERE ja.job_id = ?
+                ORDER BY ja.applied_at DESC
+            `, [jobId]);
+
+            res.json({ applications });
+        } catch (error) {
+            console.error('Error fetching applications for job:', error);
+            res.status(500).json({ message: 'Internal server error' });
+        }
+    },
 };
 
 module.exports = jobApplicationController;
