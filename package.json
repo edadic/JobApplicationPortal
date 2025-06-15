@@ -2,5 +2,10 @@
   "dependencies": {
     "multer": "^2.0.1",
     "nodemailer": "^7.0.3"
-  }
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.53.0",
+    "@types/node": "^24.0.1"
+  },
+  "scripts": {}
 }
