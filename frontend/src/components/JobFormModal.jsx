@@ -41,6 +41,7 @@ const JobFormModal = ({ isOpen, onClose, onSubmit }) => {
               onChange={(e) => setJobData({ ...jobData, title: e.target.value })}
               className="w-full p-2 border rounded"
               required
+              placeholder='Job Title'
             />
           </div>
           <div className="mb-4">
@@ -51,6 +52,7 @@ const JobFormModal = ({ isOpen, onClose, onSubmit }) => {
               className="w-full p-2 border rounded"
               rows="4"
               required
+              placeholder='Description'
             />
           </div>
           <div className="mb-4">
@@ -61,6 +63,7 @@ const JobFormModal = ({ isOpen, onClose, onSubmit }) => {
               onChange={(e) => setJobData({ ...jobData, location: e.target.value })}
               className="w-full p-2 border rounded"
               required
+              placeholder='Location'
             />
           </div>
           <div className="mb-4">
@@ -85,6 +88,7 @@ const JobFormModal = ({ isOpen, onClose, onSubmit }) => {
               onChange={(e) => setJobData({ ...jobData, salary_range: e.target.value })}
               className="w-full p-2 border rounded"
               required
+              placeholder='Salary Range'
             />
           </div>
           <div className="flex justify-end space-x-4">
