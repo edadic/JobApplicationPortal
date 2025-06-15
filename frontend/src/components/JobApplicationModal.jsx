@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
@@ -6,7 +6,26 @@ const JobApplicationModal = ({ isOpen, onClose, jobId }) => {
   const [coverLetter, setCoverLetter] = useState('');
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [jobSeekerProfile, setJobSeekerProfile] = useState(null);
+  const [resumeFile, setResumeFile] = useState(null);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (isOpen) {
+      const fetchProfile = async () => {
+        try {
+          const token = localStorage.getItem('token');
+          const res = await axios.get('http://localhost:3000/api/auth/me', {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          setJobSeekerProfile(res.data.jobSeekerProfile);
+        } catch (err) {
+          setJobSeekerProfile(null);
+        }
+      };
+      fetchProfile();
+    }
+  }, [isOpen]);
 
 const handleSubmit = async (e) => {
     e.preventDefault();
@@ -27,10 +46,24 @@ const handleSubmit = async (e) => {
         return;
       }
 
+      let resume_url = jobSeekerProfile?.resume_url || null;
+      if (!resume_url && resumeFile) {
+        const formData = new FormData();
+        formData.append('resume', resumeFile);
+        const uploadRes = await axios.post('http://localhost:3000/api/job-seekers/upload-resume', formData, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'multipart/form-data'
+          }
+        });
+        resume_url = uploadRes.data.resumeUrl || null;
+      }
+
       // Make sure jobId is being sent as a string
       const requestData = {
         job_id: jobId, // Verify this matches backend expectations
-        cover_letter: coverLetter.trim()
+        cover_letter: coverLetter.trim(),
+        resume_url: resume_url
       };
 
 
@@ -72,6 +105,8 @@ const handleSubmit = async (e) => {
 
   if (!isOpen) return null;
 
+  const hasResume = !!jobSeekerProfile?.resume_url;
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white p-8 rounded-lg w-full max-w-md">
@@ -93,6 +128,17 @@ const handleSubmit = async (e) => {
               placeholder="Tell us why you're interested in this position..."
             />
           </div>
+          {!hasResume && (
+          <div className="mb-4">
+            <label className="block text-gray-700 mb-2">Upload Resume (PDF)</label>
+            <input
+              type="file"
+              accept="application/pdf"
+              onChange={(e) => setResumeFile(e.target.files[0])}
+              required
+            />
+          </div>
+          )}
           <div className="flex justify-end space-x-4">
             <button
               type="button"
