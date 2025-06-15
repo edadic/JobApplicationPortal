@@ -193,8 +193,14 @@ return (
                     <div>Skills: {app.skills}</div>
                     <div>Experience: {app.experience_years} years</div>
                     <div>Education: {app.education_level}</div>
-                    <a href={app.resume_url} target="_blank" rel="noopener noreferrer" className="text-blue-500 underline">View Resume</a>
-                    <button
+<a
+  href={`http://localhost:3000${app.resume_url}`}
+  target="_blank"
+  rel="noopener noreferrer"
+  className="text-blue-500 underline"
+>
+  View Resume
+</a>                    <button
                       className="bg-blue-500 text-white px-3 py-1 rounded ml-2"
                       onClick={() => {
                         setSelectedApplicant(app);

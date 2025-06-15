@@ -4,56 +4,60 @@ const JobListing = require('../models/JobListing');
 
 const jobApplicationController = {
     async apply(req, res) {
-        try {
-            if (req.user.userType !== 'job_seeker') {
-                return res.status(403).json({ message: 'Only job seekers can apply for jobs' });
-            }
-
-            const { job_id, cover_letter } = req.body;
-
-            const [seekerProfile] = await db.execute(
-                'SELECT id FROM job_seeker_profiles WHERE user_id = ?',
-                [req.user.userId]
-            );
-
-            if (!seekerProfile[0]) {
-                return res.status(404).json({ message: 'Job seeker profile not found' });
-            }
-
-            const job = await JobListing.getById(job_id);
-            if (!job || job.status !== 'active') {
-                return res.status(404).json({ message: 'Job not found or no longer active' });
-            }
-
-            const existingApplication = await JobApplication.getByJobAndApplicant(job_id, seekerProfile[0].id);
-            if (existingApplication) {
-                return res.status(400).json({ message: 'You have already applied for this job' });
-            }
-
-            const applicationData = {
-                job_id,
-                applicant_id: seekerProfile[0].id,
-                cover_letter: cover_letter || null
-            };
-
-            const applicationId = await JobApplication.create(applicationData);
-
-            res.status(201).json({
-                message: 'Application submitted successfully',
-                applicationId
-            });
-        } catch (error) {
-            console.error('Error details:', {
-                message: error.message,
-                stack: error.stack,
-                sqlMessage: error.sqlMessage
-            });
-            res.status(500).json({ 
-                message: 'Internal server error',
-                error: error.message
-            });
+    try {
+        if (req.user.userType !== 'job_seeker') {
+            return res.status(403).json({ message: 'Only job seekers can apply for jobs' });
         }
-    },
+
+        const { job_id, cover_letter, resume_url } = req.body;
+
+        const [seekerProfile] = await db.execute(
+            'SELECT id, resume_url FROM job_seeker_profiles WHERE user_id = ?',
+            [req.user.userId]
+        );
+
+        if (!seekerProfile[0]) {
+            return res.status(404).json({ message: 'Job seeker profile not found' });
+        }
+
+        const job = await JobListing.getById(job_id);
+        if (!job || job.status !== 'active') {
+            return res.status(404).json({ message: 'Job not found or no longer active' });
+        }
+
+        const existingApplication = await JobApplication.getByJobAndApplicant(job_id, seekerProfile[0].id);
+        if (existingApplication) {
+            return res.status(400).json({ message: 'You have already applied for this job' });
+        }
+
+        // Use resume_url from request or from profile
+        const finalResumeUrl = resume_url || seekerProfile[0].resume_url || null;
+
+        const applicationData = {
+            job_id,
+            applicant_id: seekerProfile[0].id,
+            cover_letter: cover_letter || null,
+            resume_url: finalResumeUrl
+        };
+
+        const applicationId = await JobApplication.create(applicationData);
+
+        res.status(201).json({
+            message: 'Application submitted successfully',
+            applicationId
+        });
+    } catch (error) {
+        console.error('Error details:', {
+            message: error.message,
+            stack: error.stack,
+            sqlMessage: error.sqlMessage
+        });
+        res.status(500).json({ 
+            message: 'Internal server error',
+            error: error.message
+        });
+    }
+},
 
     async getEmployerApplications(req, res) {
         try {
